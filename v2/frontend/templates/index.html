@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeadHarvest - Google Maps Scraper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/app.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">LeadHarvest</span>
+      </div>
+      <nav class="header-nav">
+        <button class="nav-btn active" data-panel="scraper">Scraper</button>
+        <button class="nav-btn" data-panel="exports">Exports</button>
+        <button class="nav-btn" data-panel="jobs">Jobs</button>
+        <button class="theme-toggle" id="themeToggle" title="Toggle theme">◐</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <main class="main">
+
+    <!-- ==================== SCRAPER PANEL ==================== -->
+    <section class="panel active" id="panel-scraper">
+      <div class="panel-grid">
+
+        <!-- LEFT: Config form -->
+        <div class="config-col">
+          <div class="section-label">01 - KEYWORDS</div>
+
+          <div class="keyword-input-row">
+            <input id="keywordInput" class="field" type="text"
+              placeholder="What businesses do you want to search?" />
+            <button class="btn-add" id="addKeywordBtn">+</button>
+          </div>
+
+          <div class="tag-list" id="keywordTags"></div>
+
+          <div class="divider"></div>
+
+          <div class="section-label">02 - LOCATION</div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">City</label>
+              <input id="cityInput" class="field" type="text" placeholder="Which city do you want to search in?" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">State</label>
+              <input id="stateInput" class="field" type="text" placeholder="Which state do you want to search in?" />
+            </div>
+          </div>
+
+          <div class="quick-fill">
+            <span class="quick-label">Quick:</span>
+            <button class="chip" data-city="Vadodara" data-state="Gujarat">Vadodara, Gujarat</button>
+            <button class="chip" data-city="Pune" data-state="Maharashtra">Pune, Maharashtra</button>
+            <button class="chip" data-city="Bengaluru" data-state="Karnataka">Bengaluru, Karnataka</button>
+            <button class="chip" data-city="Mumbai" data-state="Maharashtra">Mumbai, Maharashtra</button>
+            <button class="chip" data-city="Delhi" data-state="">Delhi</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="section-label">03 - CONFIGURATIONS</div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Maximum Results</label>
+              <input id="maxResults" class="field" type="number" value="60" min="5" max="200" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Export Format</label>
+              <select id="exportFormat" class="field">
+                <option value="xlsx">Excel (.xlsx)</option>
+                <option value="csv">CSV (.csv)</option>
+                <option value="json">JSON (.json)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="section-label">04 - FILTERS <span class="optional">(optional)</span></div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Min Rating</label>
+              <input id="minRating" class="field" type="number" value="0" min="0" max="5" step="0.5" placeholder="0 = any" />
+            </div>
+          </div>
+
+          <div class="toggle-row">
+            <label class="toggle-label">
+              <input type="checkbox" id="requirePhone" class="toggle-input" />
+              <span class="toggle-switch"></span>
+              Must have phone
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="requireWebsite" class="toggle-input" />
+              <span class="toggle-switch"></span>
+              Must have website
+            </label>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="action-row">
+            <button class="btn-primary" id="startBtn">
+              <span class="btn-icon">▶</span> Start Scraping
+            </button>
+            <button class="btn-danger hidden" id="stopBtn">
+              <span class="btn-icon">■</span> Stop
+            </button>
+          </div>
+        </div>
+
+        <!-- RIGHT: Progress + logs -->
+        <div class="progress-col">
+          <div class="status-card" id="statusCard">
+            <div class="status-idle">
+              <div class="idle-icon">⬡</div>
+              <div class="idle-text">Configure keywords and location,<br/>then hit <strong>Start Scraping</strong></div>
+            </div>
+          </div>
+
+          <div class="stats-row hidden" id="statsRow">
+            <div class="stat-box">
+              <div class="stat-val" id="statLeads">0</div>
+              <div class="stat-key">Leads Found</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val" id="statQueries">0/0</div>
+              <div class="stat-key">Queries</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-val" id="statStatus">—</div>
+              <div class="stat-key">Status</div>
+            </div>
+          </div>
+
+          <div class="progress-bar-wrap hidden" id="progressBarWrap">
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+
+          <div class="log-panel" id="logPanel">
+            <div class="log-header">
+              <span>ACTIVITY LOG</span>
+              <button class="log-clear" id="clearLogBtn">CLEAR</button>
+            </div>
+            <div class="log-body" id="logBody">
+              <div class="log-line muted">No activities to show.</div>
+            </div>
+          </div>
+
+          <div class="export-ready hidden" id="exportReady">
+            <div class="export-icon">✓</div>
+            <div class="export-msg">Scraping complete! File saved locally.</div>
+            <button class="btn-download" id="downloadBtn">⬇ Download Export</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ==================== EXPORTS PANEL ==================== -->
+    <section class="panel" id="panel-exports">
+      <div class="panel-header">
+        <h2>Export Files</h2>
+        <button class="btn-outline" id="refreshExportsBtn">↻ Refresh</button>
+      </div>
+      <div class="exports-table-wrap">
+        <table class="data-table" id="exportsTable">
+          <thead>
+            <tr>
+              <th>Filename</th>
+              <th>Format</th>
+              <th>Size</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="exportsBody">
+            <tr><td colspan="5" class="empty-row">No exports yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ==================== JOBS PANEL ==================== -->
+    <section class="panel" id="panel-jobs">
+      <div class="panel-header">
+        <h2>Scrape Jobs</h2>
+        <button class="btn-outline" id="refreshJobsBtn">↻ Refresh</button>
+      </div>
+      <div class="jobs-list" id="jobsList">
+        <div class="empty-row">No jobs yet.</div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
