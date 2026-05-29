@@ -275,6 +275,4 @@ It serves as the prototype/foundation for future, more advanced versions.
 
 ![Search Results](screenshots/screen1.png)
 
-![Scraping Process](screenshots/screen2.png)
-
 ![Excel Output](screenshots/screen3.png)
